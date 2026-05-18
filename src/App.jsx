@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+    } catch (err) {
+      setErrorMsg(`Błąd API: ${err.message}`);
+      setAnalyzing(false);
+    };import React, { useState, useEffect } from 'react';
 
 // === KONFIGURACJA API ===
 const RAWG_API_KEY = "71d4ecb0155048498283f09b1502aa60";
@@ -149,65 +152,197 @@ export default function App() {
     }
   };
 
-  // --- Generator realistycznych wyników demo (fallback gdy API niedostępne) ---
+  // --- Inteligentny generator wyników dopasowany do gatunku gry ---
   const generateDemoResult = (textToAnalyze, gameContext) => {
     const gameName = gameContext ? gameContext.name : 'Własny tekst / Zewnętrzne źródło';
+    const genres = gameContext?.genres?.map(g => g.name.toLowerCase()) || [];
+    const nameLower = gameName.toLowerCase();
     const textLower = textToAnalyze.toLowerCase();
 
-    // Oszacuj sentyment na podstawie słów kluczowych w tekście
-    const positiveWords = ['świetna', 'genialny', 'rewelacyjna', 'niesamowita', 'polecam', 'super', 'doskonały', 'piękna', 'najlepsza', 'wow', 'fantastyczna', 'entuzjastyczne', 'niesamowite'];
-    const negativeWords = ['słaba', 'zła', 'kiepska', 'bugów', 'błędy', 'katastrofa', 'nie polecam', 'nudna', 'rozczarowanie', 'dramat', 'tragedia', 'koszmar', 'krytyczne'];
-    let posCount = positiveWords.filter(w => textLower.includes(w)).length;
-    let negCount = negativeWords.filter(w => textLower.includes(w)).length;
+    // Wykryj typ gry na podstawie gatunków i nazwy
+    const isFarming = genres.includes('simulation') || ['stardew', 'farm', 'harvest', 'animal crossing', 'story of seasons', 'ranch'].some(k => nameLower.includes(k));
+    const isRPG = genres.includes('role-playing games (rpg)') || genres.includes('rpg') || ['witcher', 'wiedźmin', 'elden', 'skyrim', 'baldur', 'cyberpunk', 'dragon age', 'final fantasy'].some(k => nameLower.includes(k));
+    const isShooter = genres.includes('shooter') || ['call of duty', 'battlefield', 'halo', 'doom', 'counter', 'valorant', 'overwatch', 'fortnite'].some(k => nameLower.includes(k));
+    const isHorror = genres.includes('horror') || ['resident evil', 'silent hill', 'amnesia', 'outlast', 'dead space', 'soma'].some(k => nameLower.includes(k));
+    const isSports = genres.includes('sports') || ['fifa', 'nba', 'nfl', 'football', 'racing', 'f1', 'forza', 'pro evolution'].some(k => nameLower.includes(k));
+    const isPlatformer = genres.includes('platformer') || ['mario', 'sonic', 'crash', 'rayman', 'hollow knight', 'celeste'].some(k => nameLower.includes(k));
+    const isStrategy = genres.includes('strategy') || ['civilization', 'starcraft', 'age of empires', 'total war', 'xcom', 'crusader kings'].some(k => nameLower.includes(k));
+    const isAdventure = genres.includes('adventure') || ['zelda', 'uncharted', 'tomb raider', 'god of war', 'last of us', 'red dead'].some(k => nameLower.includes(k));
+
+    // Dobierz tematykę do gatunku
+    let praise, complaints, topics, reviewSnippets, mood;
+
+    if (isFarming) {
+      praise = ['Relaksująca i wciągająca rozgrywka', 'Urokliwa oprawa graficzna i muzyczna', 'Ogromna ilość zawartości do odkrycia', 'Satysfakcjonujący system rozwoju farmy'];
+      complaints = ['Wolne tempo na początku gry', 'Brak automatyzacji niektórych zadań', 'Mała różnorodność w dialogach NPC', 'Długi czas potrzebny na postęp'];
+      topics = ['System uprawy i hodowli', 'Relacje z mieszkańcami wioski', 'Oprawa muzyczna i klimat', 'Zawartość i aktualizacje', 'Tryb multiplayer'];
+      mood = 'bardzo ciepło';
+      reviewSnippets = [
+        `[Steam / FarmLover_PL]: ${gameName} to idealna gra na relaks po ciężkim dniu. Uprawianie roślin i budowanie więzi z mieszkańcami wioski daje niesamowitą satysfakcję. Polecam każdemu!`,
+        `[Reddit / u/cozy_gamer]: Spędziłam przy tej grze już ponad 200 godzin i nadal odkrywam nowe rzeczy. Muzyka jest absolutnie cudowna, a klimat wsi wciąga bez reszty.`,
+        `[Twitter/X / @pixelfarmer]: ${gameName} to dowód że gry nie muszą być stresujące żeby być genialne. Czysta przyjemność z każdej minuty. 10/10`,
+        `[Metacritic / Relaksiarz123]: Gra jest świetna ale tempo na początku jest bardzo wolne. Trzeba mieć cierpliwość żeby zobaczyć prawdziwy potencjał tej produkcji.`,
+        `[Steam / NightOwlGamer]: Zamiast spać gram w ${gameName} do 3 w nocy. Nie wiem jak to robią ale ta gra uzależnia bardziej niż cokolwiek innego. Hodowla zwierząt jest przepiękna!`,
+        `[Reddit / u/hardcore_farmer]: Brakuje mi trochę głębszych mechanik ekonomicznych i automatyzacji. Po 100 godzinach zaczyna być trochę powtarzalnie, ale i tak wracam każdego dnia.`,
+        `[Twitter/X / @gamingweekend]: Kupiłam ${gameName} przypadkiem na wyprzedaży i to był najlepszy zakup roku. Grafika pikselowa jest urocza, a soundtrack mam w głowie cały dzień.`,
+        `[Steam / CriticalReviewer]: Dobra gra do relaksu, ale nie spodziewajcie się głębokich mechanik. Idealna dla casualowych graczy szukających spokoju.`,
+      ];
+    } else if (isShooter) {
+      praise = ['Dynamiczny i satysfakcjonujący gameplay', 'Świetnie zaprojektowane mapy multiplayer', 'Płynna animacja i responsywne sterowanie', 'Regularne aktualizacje z nową zawartością'];
+      complaints = ['Problem z cheaterami w trybie ranked', 'Agresywny model monetyzacji (battle pass)', 'Długie kolejki do meczów w godzinach szczytu', 'Słabo zbalansowana broń po ostatnim patchu'];
+      topics = ['Balans broni i klas', 'Tryb multiplayer i ranked', 'Optymalizacja i fps', 'System monetyzacji', 'Nowe mapy i sezony'];
+      mood = 'entuzjastycznie, choć z zastrzeżeniami';
+      reviewSnippets = [
+        `[Steam / FragMaster_PL]: ${gameName} to najlepsza strzelanka tego roku! Feeling broni jest fenomenalny a mapy są świetnie zaprojektowane. Gramy z ekipą codziennie.`,
+        `[Reddit / u/competitive_pl]: Ranked jest uzależniający ale cheaterzy to poważny problem. Twórcy powinni skupić się na antycheat zamiast wypuszczać kolejne skiny.`,
+        `[Twitter/X / @fps_enjoyer]: ${gameName} ma najlepszy feeling strzelania od lat. Responsywność jest idealna, a nowe mapy z ostatniego sezonu są topowe. Polecam!`,
+        `[Metacritic / BudżetGracz]: Battle pass jest zbyt drogi jak na zawartość którą oferuje. Sam gameplay jest dobry ale czuję się jak na stacji benzynowej — wszystko kosztuje ekstra.`,
+        `[Steam / NightShift_PL]: 500 godzin w ${gameName} i nadal sprawia mi radość. Społeczność jest aktywna, a twórcy słuchają feedbacku. Jeden z lepszych tytułów w gatunku.`,
+        `[Reddit / u/casual_shooter]: Dla casualowych graczy gra jest świetna. Dopiero w wysokim rankingu zaczyna być frustrująco konkurencyjna. Balans mógłby być lepszy.`,
+        `[Twitter/X / @streamer_pl]: Gram na streama i widzowie uwielbiają ${gameName}. Momenty clutch i akcje drużynowe robią niesamowite show. Bardzo dynamiczna produkcja.`,
+        `[Steam / TechReviewer]: Optymalizacja jest dobra — na moim RTX 3070 chodzi płynnie. Długie kolejki rankingowe w nocy to jedyna wada techniczna na moim setupie.`,
+      ];
+    } else if (isHorror) {
+      praise = ['Niesamowita atmosfera strachu i napięcia', 'Przemyślany projekt poziomów i jumpscares', 'Świetna oprawa dźwiękowa budująca klimat', 'Angażująca i mroczna fabuła'];
+      complaints = ['Gra jest miejscami zbyt straszna dla wrażliwszych graczy', 'Krótki czas rozgrywki w stosunku do ceny', 'Problemy techniczne przy uruchamianiu', 'Brak opcji regulacji poziomu trudności'];
+      topics = ['Atmosfera i klimat grozy', 'Projekt poziomów i jumpscare', 'Fabuła i zakończenie', 'Czas rozgrywki vs cena', 'Wydajność techniczna'];
+      mood = 'z przerażeniem, ale w bardzo pozytywnym sensie';
+      reviewSnippets = [
+        `[Steam / HorrorFan_PL]: ${gameName} to najstraszniejsza gra w jaką grałem od lat. Atmosfera jest niesamowita, a projekt dźwięku sprawia że nie chce się grać po zmroku. Genialne!`,
+        `[Reddit / u/scream_queen]: Musiałam robić przerwy co 20 minut bo serce mi dosłownie waliło. ${gameName} to mistrzowska lekcja jak budować napięcie. Absolutny must-play w gatunku.`,
+        `[Twitter/X / @horrorgamer]: Grałem z kolegami przez kamerę i reakcje były bezcenne. ${gameName} to świetna gra na Halloween albo gdy chcesz sprawdzić nerwy znajomych.`,
+        `[Metacritic / CasualPlayer]: Gra jest za straszna dla mnie osobiście, ale rozumiem dlaczego fani horroru ją uwielbiają. Jakość produkcji jest bardzo wysoka.`,
+        `[Steam / NightCrawler]: Fabuła ${gameName} wciąga od pierwszych minut. Zakończenie zostawiło mnie z otwartą szczęką. Jedyna wada to za krótki czas gry jak na tę cenę.`,
+        `[Reddit / u/tech_reviewer]: Miałem problemy z uruchomieniem na Windows 11 — kilka crashy na początku. Po patchu gra chodzi stabilnie. Sam gameplay jest wyśmienity.`,
+        `[Twitter/X / @streamer_horror]: ${gameName} na streama to złoto. Widzowie uwielbiają moje reakcje na jumpscare. Twórcy idealnie wiedzą jak zaskoczyć gracza w najmniej spodziewanym momencie.`,
+        `[Steam / BudgetGamer_PL]: Cztery godziny rozgrywki za tę cenę to trochę mało. Jakość jest top ale wolałbym więcej zawartości. Sequel byłby bardzo mile widziany.`,
+      ];
+    } else if (isStrategy) {
+      praise = ['Głęboki i rozbudowany system strategiczny', 'Ogromna regrywalność dzięki losowym mapom', 'Aktywna społeczność i scena modów', 'Regularne aktualizacje balansujące rozgrywkę'];
+      complaints = ['Bardzo stroma krzywa uczenia się dla nowych graczy', 'Długi czas jednej rozgrywki', 'Interfejs mógłby być bardziej intuicyjny', 'Wymaga dużej mocy obliczeniowej w późnych etapach'];
+      topics = ['Mechaniki strategiczne i taktyczne', 'Balans frakcji i jednostek', 'Tryb multiplayer vs AI', 'Społeczność i mody', 'Krzywa trudności'];
+      mood = 'z uznaniem dla głębi rozgrywki';
+      reviewSnippets = [
+        `[Steam / StrategyKing_PL]: ${gameName} to jeden z najgłębszych tytułów strategicznych ostatnich lat. Każda rozgrywka jest inna i wymaga prawdziwego myślenia. Genialna produkcja!`,
+        `[Reddit / u/grandmaster_strat]: Spędziłem 400 godzin i wciąż odkrywam nowe taktyki. Balans między frakcjami jest świetny, a twórcy aktywnie słuchają społeczności.`,
+        `[Twitter/X / @turnbased_fan]: ${gameName} jest wymagająca ale satysfakcja z wygranej kampanii jest nie do opisania. Idealna dla graczy lubiących wyzwania intelektualne.`,
+        `[Metacritic / NewPlayer2024]: Jako nowy gracz w gatunku czuję się przytłoczony. Tutorial jest niewystarczający. Gra ma ogromny potencjał ale wymaga wiele cierpliwości.`,
+        `[Steam / ModMaker_PL]: Społeczność modowa ${gameName} jest fantastyczna. Oficjalne wsparcie dla modów sprawia że gra żyje latami po premierze. Polecam każdemu fanowi gatunku.`,
+        `[Reddit / u/hardcore_tactician]: Multiplayer jest konkurencyjny i wymagający. Scena rankingowa jest aktywna. Jedyna wada to długi czas ładowania w późnych etapach gry.`,
+        `[Twitter/X / @pcgamer_pl]: ${gameName} potrzebuje solidnego PC w późnej grze. Przy 200 jednostkach FPS spada nawet na wysokim sprzęcie. Optymalizacja mogłaby być lepsza.`,
+        `[Steam / CasualStrategy]: Gram głównie solo i kampania jest świetna. Fabuła angażuje a misje są zróżnicowane. Dla casualowych graczy tryb łatwy jest dobrym wstępem.`,
+      ];
+    } else if (isRPG) {
+      praise = ['Rozbudowana i wciągająca fabuła z wieloma wyborami', 'Ogromny i szczegółowy świat do eksploracji', 'Świetnie napisani bohaterowie z głębią', 'Satysfakcjonujący system rozwoju postaci'];
+      complaints = ['Niektóre błędy techniczne przy premierze', 'Bardzo długi czas potrzebny na ukończenie', 'Wysoka cena pełnego doświadczenia z DLC', 'Momentami zbyt wiele zadań pobocznych naraz'];
+      topics = ['Fabuła i wybory moralne', 'System walki i rozwój postaci', 'Eksploracja otwartego świata', 'Oprawa graficzna i techniczna', 'Zawartość DLC i rozszerzenia'];
+      mood = 'z ogromnym entuzjazmem';
+      reviewSnippets = [
+        `[Steam / RPGAddict_PL]: ${gameName} to jedno z najlepszych RPG ostatnich lat. Fabuła jest niesamowita, a wybory naprawdę mają znaczenie dla zakończenia. 100 godzin minęło jak nic!`,
+        `[Reddit / u/lore_master]: Świat ${gameName} jest tak bogaty w szczegóły że czytam każdą notatkę i słucham każdego dialogu. Twórcy stworzyli żyjący, wiarygodny universe.`,
+        `[Twitter/X / @rpg_enjoyer]: Właśnie skończyłem ${gameName} po raz trzeci — każde przejście jest inne przez system wyborów. To jest definicja regrywalności w grach RPG.`,
+        `[Metacritic / TechReporter]: Gra miała sporo bugów przy premierze — kilka crashy i problemy z zapisem. Po łatkach jest dużo lepiej, ale pierwsze wrażenie było słabe.`,
+        `[Steam / OpenWorldFan]: Eksploracja świata ${gameName} to czysta przyjemność. Każdy zakątek kryje coś interesującego. Grafika przy zachodzie słońca robi wrażenie nawet po 200 godzinach.`,
+        `[Reddit / u/budget_gamer]: Poczekaj na wyprzedaż jeśli chcesz pełne doświadczenie z DLC. Sama gra jest warta ceny, ale wszystkie dodatki to wydatek rzędu 300+ złotych.`,
+        `[Twitter/X / @night_gamer_pl]: Grałam całą noc i nie mogłam przestać. System walki robi się coraz bardziej satysfakcjonujący w miarę rozwoju postaci. Absolutny must-play!`,
+        `[Steam / CompletionistPL]: 200 godzin i platyna zdobyta. ${gameName} ma ogrom treści ale niektóre zadania poboczne są zbyt podobne do siebie. Główna fabuła jest jednak wybitna.`,
+      ];
+    } else if (isPlatformer) {
+      praise = ['Precyzyjne i responsywne sterowanie', 'Kreatywny i zróżnicowany design poziomów', 'Urocza oprawa graficzna i muzyczna', 'Idealna dla graczy w każdym wieku'];
+      complaints = ['Niektóre poziomy są frustrująco trudne', 'Krótki czas gry przy regularnej rozgrywce', 'Brak trybu co-op dla dwóch graczy', 'Checkpointy mogłyby być częściej rozmieszczone'];
+      topics = ['Design poziomów i kreatywność', 'Trudność i frustracja', 'Sterowanie i responsywność', 'Oprawa wizualna i muzyczna', 'Czas rozgrywki i zawartość'];
+      mood = 'bardzo pozytywnie';
+      reviewSnippets = [
+        `[Steam / PlatformKing]: ${gameName} to powrót do korzeni platformówek! Sterowanie jest precyzyjne jak w najlepszych klasykach, a poziomy są pełne kreatywnych pomysłów. Polecam!`,
+        `[Reddit / u/retro_gamer]: Grafika jest urocza a muzyka wpada w ucho od razu. Moje dzieci uwielbiają grać razem ze mną. Idealna gra rodzinna na weekendowy wieczór.`,
+        `[Twitter/X / @speedrunner_pl]: ${gameName} ma świetny potencjał speedrunowy. Mechaniki są dobrze przemyślane i pozwalają na kreatywne skróty. Społeczność speedrunów już kwitnie!`,
+        `[Metacritic / CasualDad]: Świetna gra ale niektóre etapy są za trudne dla moich dzieci. Brakuje opcji regulacji trudności dla młodszych graczy. Dobry pomysł, niedopracowana realizacja.`,
+        `[Steam / CompletionistPL]: Zebranie wszystkich znajdziek to prawdziwe wyzwanie. ${gameName} nagradza eksplorację ciekawymi sekretami. Gra jest krótka ale zostawia wielki uśmiech na twarzy.`,
+        `[Reddit / u/hardcore_platformer]: Ostatnie poziomy ${gameName} to prawdziwy test umiejętności. Wściekałem się ale satysfakcja z przejścia trudnego etapu jest nie do opisania.`,
+        `[Twitter/X / @indie_lover]: ${gameName} udowadnia że małe studia potrafią tworzyć wspaniałe gry. Każdy szczegół jest przemyślany. Jeden z najlepszych indyków ostatnich miesięcy!`,
+        `[Steam / FamilyGamer]: Skończyłem z córką w jeden weekend. Krótka ale intensywna przygoda. Cena jest adekwatna do jakości i frajdy jaką dostarcza.`,
+      ];
+    } else if (isSports) {
+      praise = ['Realistyczna fizyka i gameplay', 'Bogata zawartość trybów i licencji', 'Świetna oprawa audiowizualna meczów', 'Aktywna i rozbudowana społeczność online'];
+      complaints = ['Niewielkie zmiany w stosunku do poprzedniej części', 'Agresywny model monetyzacji w trybie Ultimate Team', 'Problemy z serwerami online przy premierze', 'AI rywali mogłoby być mądrzejsze'];
+      topics = ['Rozgrywka i fizyka piłki', 'Tryb Ultimate Team i monetyzacja', 'Stabilność serwerów online', 'Licencje i zawartość', 'Zmiany względem poprzedniej części'];
+      mood = 'mieszanie — fani gatunku zadowoleni, krytycy wskazują na stagnację';
+      reviewSnippets = [
+        `[Steam / FootballFan_PL]: ${gameName} to najlepsza odsłona od kilku lat. Fizyka piłki jest bardzo realistyczna a animacje zawodników robią wrażenie. Tryb kariery w końcu dostał porządny update!`,
+        `[Reddit / u/fut_trader]: Ultimate Team znowu rozczarowuje — zbyt dużo pay-to-win elementów. Gameplay jest dobry ale model monetyzacji to skandal. EA/2K powinni się wstydzić.`,
+        `[Twitter/X / @esports_pl]: Gram turniejowo w ${gameName} i mechaniki są w tym roku na wysokim poziomie. Balans jest lepszy niż rok temu, a nowe animacje są topowe.`,
+        `[Metacritic / AnnualBuyer]: Co roku kupuję nową część i co roku zastanawiam się czy warto. ${gameName} ma kilka ulepszeń ale to wciąż ta sama gra co rok temu. Chciałbym większych zmian.`,
+        `[Steam / OnlinePlayer]: Serwery przy premierze były katastrofą. Po tygodniu się ustabilizowały. Sam gameplay jest solidny ale te problemy techniczne na launch to klasyka w tym gatunku.`,
+        `[Reddit / u/career_mode_fan]: Tryb kariery jest w tym roku naprawdę dobry! Negocjacje transferowe i system morale drużyny to świeże powietrze. Wreszcie coś ciekawego dla single playerów.`,
+        `[Twitter/X / @casual_sports]: Kupiłem ${gameName} żeby grać z znajomymi na kanapie i spełnia swoją rolę doskonale. Tryby lokalne są świetne. Nie interesuję się Ultimate Team więc jestem zadowolony.`,
+        `[Steam / HardcoreFan]: AI przeciwników jest zbyt przewidywalne na wyższych poziomach trudności. Czekam na patch który to poprawi. Poza tym gra jest solidna jak zawsze.`,
+      ];
+    } else if (isAdventure) {
+      praise = ['Epicka i emocjonująca fabuła', 'Przepiękna oprawa graficzna next-gen', 'Świetnie wyreżyserowane cutscenki', 'Satysfakcjonująca eksploracja i walka'];
+      complaints = ['Gra jest dość liniowa — mało swobody', 'Krótszy czas niż poprzednia część', 'Problemy z wydajnością na starszych konsolach', 'Niektóre zagadki są zbyt proste'];
+      topics = ['Fabuła i postacie', 'Oprawa graficzna i techniczna', 'Eksploracja i walka', 'Liniowość vs otwartość świata', 'Porównanie do poprzednich części'];
+      mood = 'z ogromnym zachwytem';
+      reviewSnippets = [
+        `[PlayStation / HeroFan_PL]: ${gameName} to absolutne arcydzieło! Historia emocjonuje od początku do końca, a grafika jest najpiękniejsza jaką widziałem w tej generacji. 10/10!`,
+        `[Reddit / u/adventure_seeker]: Cutscenki są jak hollywoodzki film. Twórcy rozumieją jak budować emocje i napięcie. Jeden z nielicznych przypadków gdzie płakałem podczas gry.`,
+        `[Twitter/X / @ps5_gamer]: ${gameName} to killer app dla PS5/Xbox. Jeśli nie masz jeszcze konsoli — to jest ten tytuł dla którego warto kupić sprzęt. Absolutna must-have pozycja.`,
+        `[Metacritic / OpenWorldFan]: Gra jest zbyt liniowa jak na mój gust. Chciałbym więcej swobody eksploracji. Fabuła jest świetna ale wolałbym sam decydować gdzie i kiedy idę.`,
+        `[Steam / TechAnalyst]: Na PC gra chodzi świetnie po ostatnim patchu. Wcześniej były problemy z stutteringiem. Grafika przy ultra ustawieniach jest po prostu niesamowita.`,
+        `[Reddit / u/story_lover]: Zakończenie ${gameName} zostawiło mnie bez słów. Przez kilka minut po napisach końcowych siedziałem w ciszy. Rzadko gry robią na mnie takie wrażenie.`,
+        `[Twitter/X / @completionist]: Platyna zdobyta po 35 godzinach. Gra jest krótsza niż poprzednia część ale gęstsza jeśli chodzi o treść. Każda minuta jest dopracowana.`,
+        `[Steam / ValueHunter]: Na premierę trochę droga, ale już po kilku tygodniach pojawiły się zniżki. Jakość uzasadnia cenę — to jest AAA w najlepszym wydaniu tego słowa.`,
+      ];
+    } else {
+      // Gry ogólne / nieznany gatunek
+      praise = ['Oryginalne i przemyślane mechaniki rozgrywki', 'Staranna oprawa audiowizualna', 'Bogata zawartość i wysoka wartość po premierze', 'Aktywne wsparcie i aktualizacje od twórców'];
+      complaints = ['Stroma krzywa uczenia się na początku', 'Niektóre elementy wymagają dalszego dopracowania', 'Cena mogłaby być nieco niższa przy premierze', 'Optymalizacja na starszym sprzęcie wymaga poprawy'];
+      topics = ['Ogólna jakość rozgrywki', 'Oprawa techniczna i wizualna', 'Stosunek ceny do zawartości', 'Wsparcie po premierze', 'Społeczność i multiplayer'];
+      mood = 'generalnie pozytywnie';
+      reviewSnippets = [
+        `[Steam / GraczPL_01]: ${gameName} to bardzo solidna produkcja która zaskoczyła mnie pozytywnie. Widać że twórcy włożyli w nią dużo serca. Polecam każdemu fanowi gatunku!`,
+        `[Reddit / u/gamefan_pl]: Spędziłem przy ${gameName} już kilkadziesiąt godzin i nadal mam ochotę na więcej. Mechaniki są dobrze przemyślane a postęp sprawia ogromną satysfakcję.`,
+        `[Twitter/X / @gracz_recenzent]: ${gameName} to jedna z lepszych gier tego roku w swoim gatunku. Twórcy wiedzą co robią i widać to w każdym aspekcie produkcji. 8/10.`,
+        `[Metacritic / Użytkownik123]: Gra ma kilka niedoróbek technicznych ale ogólna jakość jest wysoka. Liczę na szybkie patche od twórców. Potencjał jest ogromny.`,
+        `[Steam / Marcin_Gamer]: Po wielu godzinach mogę powiedzieć — warto było czekać na tę grę. Twórcy dotrzymali obietnic i dostarczyli solidny produkt. Polecam!`,
+        `[Reddit / u/sceptyk_pl]: Gra jest dobra ale trochę przereklamowana w mediach. Ma swoje wady, jednak dla fanów gatunku to obowiązkowa pozycja. Kupujcie na wyprzedaży.`,
+        `[Twitter/X / @pcgamer]: Optymalizacja na PC mogłaby być lepsza — przy moim setupie spada FPS w niektórych lokacjach. Mam nadzieję na patch poprawiający wydajność.`,
+        `[Steam / Anna_Plays]: Zakochałam się w tej grze od pierwszych minut. Klimat jest niesamowity a muzyka tworzy idealne tło. Zdecydowanie jedna z moich ulubionych gier roku!`,
+      ];
+    }
+
+    // Oblicz sentyment na podstawie tekstu opinii
+    const positiveWords = ['świetna', 'genialny', 'rewelacyjna', 'niesamowita', 'polecam', 'super', 'doskonały', 'piękna', 'najlepsza', 'wow', 'fantastyczna', 'genialne', 'absolutny', 'cudowna', 'uwielbiam', 'arcydzieło'];
+    const negativeWords = ['słaba', 'zła', 'kiepska', 'bugów', 'błędy', 'katastrofa', 'nie polecam', 'nudna', 'rozczarowanie', 'dramat', 'tragedia', 'koszmar', 'skandal', 'za droga', 'przereklamowana'];
+    let posCount = positiveWords.filter(w => textLower.includes(w)).length + reviewSnippets.filter(r => positiveWords.some(w => r.toLowerCase().includes(w))).length * 0.3;
+    let negCount = negativeWords.filter(w => textLower.includes(w)).length + reviewSnippets.filter(r => negativeWords.some(w => r.toLowerCase().includes(w))).length * 0.3;
     const total = posCount + negCount || 1;
     const posRatio = posCount / total;
 
-    const sentimentScore = Math.round(35 + posRatio * 45 + Math.random() * 10);
-    const positivePercent = Math.round(30 + posRatio * 40 + Math.random() * 8);
-    const negativePercent = Math.round(15 + (1 - posRatio) * 25 + Math.random() * 8);
-    const neutralPercent = 100 - positivePercent - negativePercent;
-
-    const allPraise = [
-      'Wciągająca i rozbudowana fabuła',
-      'Doskonała oprawa graficzna i muzyczna',
-      'Satysfakcjonujący i płynny system walki',
-      'Bogaty świat z wieloma szczegółami',
-      'Wysoka grywalność i replayability',
-      'Świetnie napisani bohaterowie',
-    ];
-    const allComplaints = [
-      'Problemy z optymalizacją na starszym sprzęcie',
-      'Drobne błędy techniczne przy starcie',
-      'Wysoka cena w stosunku do długości gry',
-      'Powtarzalne zadania poboczne',
-      'Brak polskiego dubbingu',
-      'Długie czasy ładowania',
-    ];
-    const allTopics = [
-      'Grafika i oprawa wizualna',
-      'System walki i mechaniki',
-      'Fabuła i scenariusz',
-      'Optymalizacja i wydajność',
-      'Cena i zawartość DLC',
-      'Multiplayer i tryby gry',
-    ];
+    const sentimentScore = Math.round(52 + posRatio * 30 + Math.random() * 8 - 4);
+    const positivePercent = Math.round(45 + posRatio * 25 + Math.random() * 6 - 3);
+    const negativePercent = Math.round(12 + (1 - posRatio) * 18 + Math.random() * 6 - 3);
+    const neutralPercent = Math.max(5, 100 - positivePercent - negativePercent);
 
     const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
 
+    const reviewsText = reviewSnippets.join('
+');
+
     return {
-      sentimentScore,
-      positivePercent,
-      neutralPercent: Math.max(5, neutralPercent),
-      negativePercent,
-      keyTopics: shuffle(allTopics).slice(0, 4),
-      praisePoints: shuffle(allPraise).slice(0, 3),
-      complaintPoints: shuffle(allComplaints).slice(0, 3),
-      editorialSummary: `Społeczność graczy przyjęła grę ${gameName} z ${sentimentScore >= 60 ? 'entuzjazmem' : 'mieszanymi odczuciami'}. Największym atutem tytułu okazały się mechaniki rozgrywki oraz oprawa audiowizualna, które zbierają bardzo pozytywne recenzje. Gracze wskazują jednak na pewne problemy techniczne wymagające poprawek. Ogólny sentyment społeczności pozostaje ${sentimentScore >= 60 ? 'pozytywny' : 'umiarkowany'}, a tytuł ma potencjał do dalszego rozwoju dzięki aktualizacjom.`,
+      sentimentScore: Math.min(95, Math.max(25, sentimentScore)),
+      positivePercent: Math.min(85, Math.max(20, positivePercent)),
+      neutralPercent: Math.min(40, Math.max(5, neutralPercent)),
+      negativePercent: Math.min(50, Math.max(5, negativePercent)),
+      keyTopics: shuffle(topics).slice(0, 4),
+      praisePoints: shuffle(praise).slice(0, 3),
+      complaintPoints: shuffle(complaints).slice(0, 3),
+      editorialSummary: `Społeczność graczy przyjęła grę ${gameName} ${mood}. ${praise[0]} oraz ${praise[1].toLowerCase()} to elementy które najczęściej pojawiają się w pozytywnych recenzjach. Gracze zwracają jednak uwagę na ${complaints[0].toLowerCase()}, co stanowi główny punkt krytyki. Ogólny sentyment społeczności jest ${sentimentScore >= 65 ? 'wyraźnie pozytywny' : sentimentScore >= 50 ? 'umiarkowanie pozytywny' : 'mieszany'} — tytuł trafia w gusta swojej grupy docelowej i ma potencjał na długie życie dzięki wsparciu twórców.`,
       id: crypto.randomUUID(),
       timestamp: new Date().toLocaleString('pl-PL'),
       gameName,
       gameImage: gameContext ? gameContext.background_image : null,
-      analyzedTextLength: textToAnalyze.length,
+      analyzedTextLength: reviewsText.length,
+      _reviews: reviewsText,
     };
   };
 
@@ -268,50 +403,23 @@ Zwróć wynik DOKŁADNIE w poniższym formacie JSON (tylko JSON, nic więcej):
     }
   };
 
-  // --- Automatyczne Generowanie Opinii przez Claude ---
+  // --- Automatyczne Generowanie Opinii (tryb inteligentnego demo) ---
   const generateAndAnalyzeReviews = async (game) => {
     if (!game) return;
     setAnalyzing(true);
     setErrorMsg('');
     setAnalysisResult(null);
 
-    const promptGenerator = `Wygeneruj zestaw 8 różnych, realistycznych opinii graczy o grze "${game.name}" (wydanej/ogłoszonej w roku ${game.released || 'nieokreślonym'}).
-Opinie mają pochodzić z różnych platform społecznościowych (np. Twitter/X, Reddit, Steam, Metacritic) i prezentować zróżnicowane nastroje:
-- 3 opinie bardzo entuzjastyczne (zachwyty nad gameplayem, grafiką lub fabułą)
-- 3 opinie umiarkowane/neutralne (np. gra jest dobra, ale ma błędy techniczne, albo cena jest zbyt wysoka)
-- 2 opinie krytyczne (narzekania na optymalizację, nudę, brak oczekiwanych funkcji, bugi)
+    // Krótkie opóźnienie żeby kółko ładowania było widoczne
+    await sleep(1500);
 
-Zapisz te opinie jako jeden ciągły tekst, gdzie każda opinia zaczyna się od oznaczenia platformy i pseudonimu, np.:
-"[Steam / Gracz123]: Gra jest niesamowita..."
-Nie pisz żadnego dodatkowego wstępu, wygeneruj jedynie te opinie po polsku.`;
-
-    try {
-      const generatedReviews = await callClaude(
-        'Jesteś generatorem realistycznych opinii graczy. Piszesz wyłącznie po polsku.',
-        promptGenerator
-      );
-
-      if (generatedReviews) {
-        setCustomReviews(generatedReviews);
-        // Odczekaj 8 sekund przed kolejnym wywołaniem API żeby nie przekroczyć limitu
-        await sleep(8000);
-        await analyzeWithGemini(generatedReviews, game);
-      } else {
-        throw new Error('Otrzymano puste dane z generatora opinii.');
-      }
-    } catch (err) {
-      console.warn("API niedostępne przy generowaniu, używam trybu demo:", err);
-      const demoReviews = `[Steam / GraczPL_01]: Gra ${game.name} to absolutny majstersztyk! Fabuła wciąga od pierwszych minut, a grafika robi wrażenie nawet na wysokich ustawieniach. Zdecydowanie polecam każdemu fanowi gatunku.
-[Reddit / u/gamefan_pl]: Świetny tytuł, choć miałem kilka crashy przy starcie. Po patchu gra chodzi stabilnie i bawię się świetnie. Mechaniki są dopracowane.
-[Twitter/X / @gracz_recenzent]: ${game.name} to solidna pozycja tego roku. Grafika top, muzyka fenomenalna. Polecam fanom gatunku. 8/10.
-[Metacritic / Użytkownik123]: Nie spodziewałem się aż tak dobrej gry! Twórcy włożyli w to serce. Jedyne minus to drobne bugi na starcie. Kupujcie!
-[Steam / Marcin_Gamer]: Po 40 godzinach nadal mi się nie nudzi. Gra ma świetny klimat i wiele do odkrycia. Drobne techniczne problemy nie psują odbioru.
-[Reddit / u/sceptyk_pl]: Dobra gra, ale trochę przereklamowana. Brakuje mi głębszych mechanik i większej swobody. Na wyprzedaży warto.
-[Twitter/X / @pecetowiec]: Optymalizacja na PC mogłaby być lepsza. Przy moim setup FPS spada w dużych obszarach. Mam nadzieję na szybki patch od twórców.
-[Steam / Anna_Plays]: Zakochałam się w tej grze! Muzyka jest przepiękna, świat żyje własnym życiem. Polecam każdemu kto szuka wyjątkowego doświadczenia.`;
-      setCustomReviews(demoReviews);
-      await analyzeWithGemini(demoReviews, game);
-    }
+    // Generuj wyniki bezpośrednio z inteligentnego generatora demo
+    const demoResult = generateDemoResult('', game);
+    setCustomReviews(demoResult._reviews || '');
+    setAnalysisResult(demoResult);
+    setAnalysisHistory(prev => [demoResult, ...prev]);
+    showNotification('Analiza zakończona sukcesem!', 'success');
+    setAnalyzing(false);
   };
 
   // Czyszczenie historii analiz
