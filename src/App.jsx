@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 // === KONFIGURACJA API ===
 const RAWG_API_KEY = "71d4ecb0155048498283f09b1502aa60";
 
-// Klucz OpenRouter pobierany ze zmiennych środowiskowych Netlify
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+// Klucz OpenRouter
+const OPENROUTER_API_KEY = "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";
 
 // Funkcja wywołująca OpenRouter bezpośrednio z przeglądarki
 async function callClaude(systemPrompt, userPrompt) {
