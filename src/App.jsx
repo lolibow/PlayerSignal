@@ -1,7 +1,4 @@
-    } catch (err) {
-      setErrorMsg(`Błąd API: ${err.message}`);
-      setAnalyzing(false);
-    };import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // === KONFIGURACJA API ===
 const RAWG_API_KEY = "71d4ecb0155048498283f09b1502aa60";
