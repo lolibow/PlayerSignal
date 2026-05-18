@@ -322,8 +322,7 @@ export default function App() {
 
     const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
 
-    const reviewsText = reviewSnippets.join('
-');
+    const reviewsText = reviewSnippets.join('\n');
 
     return {
       sentimentScore: Math.min(95, Math.max(25, sentimentScore)),
