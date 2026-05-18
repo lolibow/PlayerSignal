@@ -311,16 +311,6 @@ Nie pisz żadnego dodatkowego wstępu, wygeneruj jedynie te opinie po polsku.`;
 [Steam / Anna_Plays]: Zakochałam się w tej grze! Muzyka jest przepiękna, świat żyje własnym życiem. Polecam każdemu kto szuka wyjątkowego doświadczenia.`;
       setCustomReviews(demoReviews);
       await analyzeWithGemini(demoReviews, game);
-      const demoReviews = `[Steam / GraczPL_01]: Gra ${game.name} to absolutny majstersztyk! Fabuła wciąga od pierwszych minut, a grafika robi wrażenie nawet na wysokich ustawieniach. Zdecydowanie polecam każdemu fanowi gatunku.
-[Reddit / u/gamefan_pl]: Świetny tytuł, choć miałem kilka crashy przy starcie. Po patchu gra chodzi stabilnie. System walki jest satysfakcjonujący, ale zadania poboczne bywają powtarzalne.
-[Twitter/X / @gracz_recenzent]: ${game.name} to solidna pozycja, ale cena mogłaby być niższa. Grafika top, optymalizacja mogłaby być lepsza na słabszym sprzęcie. 7/10.
-[Metacritic / Użytkownik123]: Nie spodziewałem się aż tak dobrej fabuły! Bohaterowie są świetnie napisani. Jedyne minus to brak polskiego dubbingu. Kupujcie w ciemno!
-[Steam / Marcin_Gamer]: Po 40 godzinach mogę powiedzieć — to jedna z lepszych gier roku. Twórcy włożyli w to serce. Drobne bugi nie psują ogólnego odbioru.
-[Reddit / u/sceptyk_pl]: Trochę przereklamowane moim zdaniem. Dobra gra, ale nie rewolucja. Brakuje mi głębszego systemu RPG i większej swobody wyborów.
-[Twitter/X / @pecetowiec]: Optymalizacja na PC kuleje — przy cutscenkach FPS spada drastycznie. Mam RTX 3080 i nie rozumiem dlaczego. Mam nadzieję na szybki patch.
-[Steam / Anna_Plays]: Zakochałam się w tej grze! Muzyka jest przepiękna, świat żyje własnym życiem. Polecam każdemu kto szuka czegoś wyjątkowego.`;
-      setCustomReviews(demoReviews);
-      await analyzeWithGemini(demoReviews, game);
     }
   };
 
